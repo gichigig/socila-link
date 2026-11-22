@@ -44,3 +44,7 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local scratch text files
+src/components/feed/FeedTest.tsx
+
