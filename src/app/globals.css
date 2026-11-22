@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+:root {
+  --background: #07090E;
+  --foreground: #F8FAFC;
+  --card: #0F1422;
+  --card-elevated: #161D30;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(244, 63, 94, 0.35);
+  --brand-pink: #FF3366;
+  --brand-rose: #F43F5E;
+  --brand-violet: #8B5CF6;
+  --brand-purple: #9333EA;
+  --brand-cyan: #06B6D4;
+}
+
+body {
+  background-color: #07090E;
+  color: #F8FAFC;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(15, 20, 34, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-nav {
+  background: rgba(10, 13, 22, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-dock {
+  background: rgba(15, 20, 34, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(244, 63, 94, 0.15);
+}
+
+.glass-card {
+  background: rgba(22, 29, 48, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Brand Gradients */
+.gradient-brand {
+  background: linear-gradient(135deg, #FF3366 0%, #F43F5E 45%, #9333EA 100%);
+}
+
+.gradient-brand-subtle {
+  background: linear-gradient(135deg, rgba(255, 51, 102, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%);
+}
+
+.gradient-gold {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.gradient-cyan {
+  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #FF3366 0%, #FB7185 50%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-glow {
+  background: radial-gradient(circle at 50% 10%, rgba(255, 51, 102, 0.18) 0%, rgba(147, 51, 234, 0.12) 40%, transparent 75%);
+}
+
+.ambient-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 51, 102, 0.14) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.16) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+}
+
+/* Radar Scan Keyframes for Empty Discovery Stage */
+@keyframes radar-wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-radar-wave-1 {
+  animation: radar-wave 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.animate-radar-wave-2 {
+  animation: radar-wave 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite 1s;
+}
+
+.animate-radar-wave-3 {
+  animation: radar-wave 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite 2s;
+}
+
+/* Micro-interactions & Shadows */
+.glow-pink-sm {
+  box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+}
+
+.glow-pink-lg {
+  box-shadow: 0 10px 30px rgba(255, 51, 102, 0.45);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+}
+
+/* Custom Scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07090E;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E2538;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2D3748;
+}
+
+/* Desktop Keyboard Shortcut Badge */
+.kbd-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.7rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  line-height: 1;
+  color: #F1F5F9;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Anti-Screenshot & Protected Media Defense */
+@media print {
+  body {
+    background-color: #000000 !important;
+    color: #000000 !important;
+  }
+  img, video, canvas {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Mobile Safe Area Inset Support */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 12px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 12px));
+}
+
+/* OpenStreetMap & Leaflet Luxury Dark Tiles (Zero API Key Needed) */
+.osm-dark-tiles img.leaflet-tile {
+  filter: brightness(0.68) invert(1) contrast(1.9) hue-rotate(200deg) saturate(0.35) !important;
+}
+.leaflet-container {
+  background: #0B0E17 !important;
+}
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+

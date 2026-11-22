@@ -1,0 +1,23 @@
+{
+  "name": "SociLaLink — Dating & Social Lifestyle",
+  "short_name": "SociLaLink",
+  "description": "Exclusive dating discovery, companion dates, and verified creator connections.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090E",
+  "theme_color": "#07090E",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}
