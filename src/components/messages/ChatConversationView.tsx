@@ -101,8 +101,84 @@ export function ChatConversationView({
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   const prevCountRef = useRef(0);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Dynamic Virtual Keyboard offset tracker for mobile screens
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const vv = window.visualViewport;
+
+    const handleViewportChange = () => {
+      if (window.innerWidth >= 1024) {
+        setKeyboardOffset(0);
+        return;
+      }
+
+      if (!vv) return;
+
+      const windowH = window.innerHeight;
+      const visibleH = vv.height;
+      const offsetTop = vv.offsetTop || 0;
+      const diff = Math.max(0, windowH - (visibleH + offsetTop));
+
+      if (diff > 80) {
+        setKeyboardOffset(Math.round(diff));
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        setKeyboardOffset(0);
+      }
+    };
+
+    if (vv) {
+      vv.addEventListener('resize', handleViewportChange);
+      vv.addEventListener('scroll', handleViewportChange);
+    }
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', handleViewportChange);
+        vv.removeEventListener('scroll', handleViewportChange);
+      }
+    };
+  }, []);
+
+  const handleInputFocus = () => {
+    setTimeout(() => {
+      if (window.visualViewport) {
+        const windowH = window.innerHeight;
+        const visibleH = window.visualViewport.height;
+        const offsetTop = window.visualViewport.offsetTop || 0;
+        const diff = Math.max(0, windowH - (visibleH + offsetTop));
+        if (diff > 80) {
+          setKeyboardOffset(Math.round(diff));
+        }
+      }
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+  };
+
+  const handleInputBlur = () => {
+    setTimeout(() => {
+      if (window.visualViewport) {
+        const windowH = window.innerHeight;
+        const visibleH = window.visualViewport.height;
+        const offsetTop = window.visualViewport.offsetTop || 0;
+        const diff = Math.max(0, windowH - (visibleH + offsetTop));
+        if (diff <= 80) {
+          setKeyboardOffset(0);
+        }
+      } else {
+        setKeyboardOffset(0);
+      }
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    }, 100);
+  };
 
   const isPartnerOnline = isUserOnline(partner.id);
   const partnerTyping = typingStatusByConversation[conversationId];
@@ -326,7 +402,12 @@ export function ChatConversationView({
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col h-full bg-[#0B0E14] text-white overflow-hidden">
+    <div
+      className="flex-1 min-h-0 flex flex-col h-full bg-[#0B0E14] text-white overflow-hidden transition-[padding-bottom] duration-150 ease-out"
+      style={{
+        paddingBottom: keyboardOffset > 0 ? `${keyboardOffset}px` : undefined,
+      }}
+    >
       {/* Toast Notice */}
       {infoNotice && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 rounded-full bg-rose-500/90 text-white text-xs font-semibold shadow-lg animate-fade-in">
@@ -452,6 +533,11 @@ export function ChatConversationView({
       <div
         ref={messagesContainerRef}
         onScroll={handleContainerScroll}
+        onTouchStart={() => {
+          if (document.activeElement === inputRef.current) {
+            inputRef.current?.blur();
+          }
+        }}
         className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3"
       >
         {/* Load Earlier Messages Trigger / Spinner */}
@@ -691,11 +777,14 @@ export function ChatConversationView({
         </button>
 
         <input
+          ref={inputRef}
           type="text"
           value={inputContent}
           onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           placeholder="Type a message..."
-          className="flex-1 bg-[#1A202C] border border-gray-700/80 rounded-full px-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-rose-500 transition-colors"
+          className="flex-1 bg-[#1A202C] border border-gray-700/80 rounded-full px-4 py-2 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-rose-500 transition-colors"
         />
 
         <button

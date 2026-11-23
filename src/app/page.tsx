@@ -114,6 +114,7 @@ export default function Home() {
   const { socket } = useSocket();
   const [authModal, setAuthModal] = useState<'login' | 'register' | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('discover');
+  const [isChatActive, setIsChatActive] = useState(false);
   const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true);
   const lastScrollTopRef = useRef(0);
   const viewportStageRef = useRef<HTMLDivElement>(null);
@@ -486,17 +487,20 @@ export default function Home() {
         {/* ======================================================== */}
         <div
           ref={viewportStageRef}
-          className="flex-1 min-w-0 flex flex-col justify-between h-full bg-[#0A0D17]/90 rounded-none lg:rounded-3xl overflow-hidden shadow-2xl border-0 lg:border border-white/[0.08] backdrop-blur-2xl relative p-2 sm:p-3 lg:p-4"
+          className={`flex-1 min-w-0 flex flex-col justify-between h-full bg-[#0A0D17]/90 rounded-none lg:rounded-3xl overflow-hidden shadow-2xl border-0 lg:border border-white/[0.08] backdrop-blur-2xl relative ${
+            activeTab === 'messages' && isChatActive ? 'p-0' : 'p-2 sm:p-3 lg:p-4'
+          }`}
         >
           
           {/* MOBILE TOP APP HEADER (< lg only) */}
-          <header
-            className={`lg:hidden shrink-0 flex items-center justify-between border-b border-white/[0.08] z-30 bg-[#0A0D17]/85 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden ${
-              isTopHeaderVisible
-                ? 'max-h-16 opacity-100 pb-2.5 pt-1 px-1'
-                : 'max-h-0 opacity-0 pb-0 pt-0 px-1 border-b-transparent pointer-events-none -translate-y-2'
-            }`}
-          >
+          {!(activeTab === 'messages' && isChatActive) && (
+            <header
+              className={`lg:hidden shrink-0 flex items-center justify-between border-b border-white/[0.08] z-30 bg-[#0A0D17]/85 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden ${
+                isTopHeaderVisible
+                  ? 'max-h-16 opacity-100 pb-2.5 pt-1 px-1'
+                  : 'max-h-0 opacity-0 pb-0 pt-0 px-1 border-b-transparent pointer-events-none -translate-y-2'
+              }`}
+            >
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('discover')}>
               <SociLaLinkLogo size="sm" showText={true} />
               {!isAuthenticated ? (
@@ -551,6 +555,7 @@ export default function Home() {
               )}
             </div>
           </header>
+          )}
 
           {/* DESKTOP STAGE TOP TITLE BAR (>= lg only) */}
           <div className="hidden lg:flex items-center justify-between pb-2 mb-1.5 shrink-0 border-b border-white/[0.08]">
@@ -625,6 +630,7 @@ export default function Home() {
                       setIsDateInviteModalOpen(true);
                     }}
                     onOpenProfile={(id) => setViewingProfileUserId(id)}
+                    onConversationActiveChange={(isActive) => setIsChatActive(isActive)}
                   />
                 </div>
               ) : (
@@ -880,59 +886,61 @@ export default function Home() {
           </main>
 
           {/* MOBILE FLOATING GLASS BOTTOM NAVIGATION DOCK (< lg only) */}
-          <nav className="lg:hidden shrink-0 pt-2 pb-safe px-1 border-t border-white/[0.08] flex items-center justify-around text-slate-400 z-30 bg-[#0C101A]/95 backdrop-blur-2xl">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              const label =
-                item.id === 'discover'
-                  ? 'Discover'
-                  : item.id === 'feed'
-                  ? 'Feed'
-                  : item.id === 'messages'
-                  ? 'Chats'
-                  : item.id === 'dates'
-                  ? 'Dates'
-                  : item.id === 'wallet'
-                  ? 'Wallet'
-                  : 'Profile';
+          {!(activeTab === 'messages' && isChatActive) && (
+            <nav className="lg:hidden shrink-0 pt-2 pb-safe px-1 border-t border-white/[0.08] flex items-center justify-around text-slate-400 z-30 bg-[#0C101A]/95 backdrop-blur-2xl">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                const label =
+                  item.id === 'discover'
+                    ? 'Discover'
+                    : item.id === 'feed'
+                    ? 'Feed'
+                    : item.id === 'messages'
+                    ? 'Chats'
+                    : item.id === 'dates'
+                    ? 'Dates'
+                    : item.id === 'wallet'
+                    ? 'Wallet'
+                    : 'Profile';
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`relative flex-1 flex flex-col items-center justify-center py-1 gap-1 transition-all cursor-pointer active:scale-95 ${
-                    isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <div className="relative">
-                    <Icon
-                      className={`w-5 h-5 transition-transform duration-200 ${
-                        isActive
-                          ? 'text-rose-400 fill-rose-500/20 scale-110 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]'
-                          : 'text-slate-400'
-                      }`}
-                    />
-                    {item.badge && (
-                      <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-[8px] font-black text-white flex items-center justify-center leading-none shadow-sm shadow-rose-500/50 animate-pulse border border-[#0C101A]">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] tracking-tight ${
-                      isActive ? 'font-bold text-rose-400' : 'font-medium'
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`relative flex-1 flex flex-col items-center justify-center py-1 gap-1 transition-all cursor-pointer active:scale-95 ${
+                      isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {label}
-                  </span>
-                  {isActive && (
-                    <span className="w-1 h-1 rounded-full bg-rose-500 absolute -bottom-0.5 shadow-[0_0_6px_rgba(244,63,94,0.9)]" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+                    <div className="relative">
+                      <Icon
+                        className={`w-5 h-5 transition-transform duration-200 ${
+                          isActive
+                            ? 'text-rose-400 fill-rose-500/20 scale-110 drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]'
+                            : 'text-slate-400'
+                        }`}
+                      />
+                      {item.badge && (
+                        <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-[8px] font-black text-white flex items-center justify-center leading-none shadow-sm shadow-rose-500/50 animate-pulse border border-[#0C101A]">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className={`text-[10px] tracking-tight ${
+                        isActive ? 'font-bold text-rose-400' : 'font-medium'
+                      }`}
+                    >
+                      {label}
+                    </span>
+                    {isActive && (
+                      <span className="w-1 h-1 rounded-full bg-rose-500 absolute -bottom-0.5 shadow-[0_0_6px_rgba(244,63,94,0.9)]" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
         </div>
 
         {/* ======================================================== */}

@@ -235,6 +235,7 @@ interface MessagesScreenProps {
   onExploreMatches?: () => void;
   onOpenDateInvite?: (partner: any) => void;
   onOpenProfile?: (userId: string) => void;
+  onConversationActiveChange?: (isActive: boolean) => void;
 }
 
 export function MessagesScreen({
@@ -242,6 +243,7 @@ export function MessagesScreen({
   onExploreMatches,
   onOpenDateInvite,
   onOpenProfile,
+  onConversationActiveChange,
 }: MessagesScreenProps) {
   const { refreshUnreadCount } = useAuth();
   const { socket, isConnected, isUserOnline, queryPresence } = useSocket();
@@ -252,6 +254,11 @@ export function MessagesScreen({
   const [activeConversation, setActiveConversation] = useState<ConversationItem | null>(null);
   const [startingChatWithId, setStartingChatWithId] = useState<string | null>(null);
   const hasAutoStartedRef = useRef<string | null>(null);
+
+  // Notify parent layout when deep conversation screen opens or closes
+  useEffect(() => {
+    onConversationActiveChange?.(Boolean(activeConversation));
+  }, [activeConversation, onConversationActiveChange]);
 
   // Fetch conversations and new matches
   const fetchData = async () => {
@@ -408,6 +415,7 @@ export function MessagesScreen({
         partner={activeConversation.otherUser}
         onBack={() => {
           setActiveConversation(null);
+          onConversationActiveChange?.(false);
           fetchData(); // refresh list and unread counts
         }}
         onOpenDateInvite={onOpenDateInvite}
