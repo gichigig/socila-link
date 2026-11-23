@@ -970,33 +970,33 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 2. Nairobi Dating & Companion Hotspots */}
+            {/* 2. In-Person & Date Safety Tips */}
             <div className="p-3.5 rounded-2xl glass-panel border border-white/10 space-y-2.5">
               <div className="flex items-center gap-2 text-rose-400">
-                <MapPin className="w-4 h-4" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-white">Nairobi Active Areas</h3>
+                <ShieldCheck className="w-4 h-4" />
+                <h3 className="text-xs font-black uppercase tracking-wider text-white">Date Safety Tips</h3>
               </div>
               <div className="space-y-2 text-xs">
-                <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
                   <div>
-                    <span className="font-bold text-white block">Westlands & Sarit</span>
-                    <span className="text-[10px] text-slate-400">Cocktail lounges & dinner dates</span>
+                    <span className="font-bold text-white block text-[11px]">Meet in Public First</span>
+                    <span className="text-[10px] text-slate-400 leading-snug block">Choose busy, well-lit cafes, restaurants, or shopping centers for initial meetups.</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-emerald-400">High Match</span>
                 </div>
-                <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
                   <div>
-                    <span className="font-bold text-white block">Kilimani & Yaya</span>
-                    <span className="text-[10px] text-slate-400">Art galleries & coffee meetups</span>
+                    <span className="font-bold text-white block text-[11px]">Share Date Details</span>
+                    <span className="text-[10px] text-slate-400 leading-snug block">Inform a trusted friend or family member of your venue and planned meeting time.</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-rose-400">Trending</span>
                 </div>
-                <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
                   <div>
-                    <span className="font-bold text-white block">Karen & Hub</span>
-                    <span className="text-[10px] text-slate-400">Exclusive companion dates</span>
+                    <span className="font-bold text-white block text-[11px]">Stay in Platform</span>
+                    <span className="text-[10px] text-slate-400 leading-snug block">Keep chats and payments in SociLaLink. Never wire money outside protected escrow.</span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-cyan-400">VIP</span>
                 </div>
               </div>
             </div>
