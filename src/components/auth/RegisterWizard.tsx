@@ -455,34 +455,49 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                   Please review our policies and community standards before completing registration:
                 </p>
 
-                {/* Quick Document Reader Buttons */}
+                {/* Quick Document Links */}
                 <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setActiveLegalModal('terms')}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
+                    title="Open full Terms of Service in new tab"
                   >
-                    <Scale className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition" />
+                    <div className="flex items-center gap-1">
+                      <Scale className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition" />
+                      <ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-rose-400" />
+                    </div>
                     <span>Terms (18+)</span>
-                  </button>
+                  </a>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveLegalModal('privacy')}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
+                    title="Open full Privacy Policy in new tab"
                   >
-                    <Shield className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition" />
+                    <div className="flex items-center gap-1">
+                      <Shield className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition" />
+                      <ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-emerald-400" />
+                    </div>
                     <span>Privacy (ODPC)</span>
-                  </button>
+                  </a>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveLegalModal('guidelines')}
+                  <a
+                    href="/guidelines"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
+                    title="Open full Community Guidelines in new tab"
                   >
-                    <Users className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition" />
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition" />
+                      <ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-cyan-400" />
+                    </div>
                     <span>Guidelines</span>
-                  </button>
+                  </a>
                 </div>
 
                 {/* Granular Agreement Checkboxes */}
@@ -497,12 +512,27 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                     />
                     <span className="leading-tight">
                       I certify I am <strong>18+</strong> and agree to the{' '}
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-rose-400 underline hover:text-rose-300 font-semibold inline-flex items-center gap-0.5"
+                      >
+                        <span>Terms of Service</span>
+                        <ExternalLink className="w-2.5 h-2.5 inline" />
+                      </a>{' '}
                       <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('terms'); }}
-                        className="text-rose-400 underline hover:text-rose-300 font-medium"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveLegalModal('terms');
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white underline ml-0.5 cursor-pointer"
+                        title="Read inside registration"
                       >
-                        Terms of Service
+                        (preview)
                       </button>{' '}
                       (M-PESA escrow 90/10 split & 6-digit code rules).
                     </span>
@@ -518,12 +548,27 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                     />
                     <span className="leading-tight">
                       I acknowledge the{' '}
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-emerald-400 underline hover:text-emerald-300 font-semibold inline-flex items-center gap-0.5"
+                      >
+                        <span>Privacy Policy</span>
+                        <ExternalLink className="w-2.5 h-2.5 inline" />
+                      </a>{' '}
                       <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('privacy'); }}
-                        className="text-emerald-400 underline hover:text-emerald-300 font-medium"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveLegalModal('privacy');
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white underline ml-0.5 cursor-pointer"
+                        title="Read inside registration"
                       >
-                        Privacy Policy
+                        (preview)
                       </button>{' '}
                       and consent to ODPC-compliant data & ephemeral location processing.
                     </span>
@@ -539,12 +584,27 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                     />
                     <span className="leading-tight">
                       I agree to the{' '}
+                      <a
+                        href="/guidelines"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-cyan-400 underline hover:text-cyan-300 font-semibold inline-flex items-center gap-0.5"
+                      >
+                        <span>Community Guidelines</span>
+                        <ExternalLink className="w-2.5 h-2.5 inline" />
+                      </a>{' '}
                       <button
                         type="button"
-                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('guidelines'); }}
-                        className="text-cyan-400 underline hover:text-cyan-300 font-medium"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveLegalModal('guidelines');
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white underline ml-0.5 cursor-pointer"
+                        title="Read inside registration"
                       >
-                        Community Guidelines
+                        (preview)
                       </button>{' '}
                       (zero tolerance for harassment or NCII, and committing to safe public meetups).
                     </span>

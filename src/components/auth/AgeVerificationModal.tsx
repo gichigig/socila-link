@@ -310,8 +310,7 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
                 onClick={(e) => e.stopPropagation()}
               >
                 Adult Terms of Service
-              </a>{' '}
-              and{' '}
+              </a>,{' '}
               <a
                 href="/privacy"
                 target="_blank"
@@ -320,6 +319,15 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
                 onClick={(e) => e.stopPropagation()}
               >
                 Privacy Policy
+              </a>, and{' '}
+              <a
+                href="/guidelines"
+                target="_blank"
+                rel="noreferrer"
+                className="text-rose-400 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Community Guidelines
               </a>.
             </span>
           </label>

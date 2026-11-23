@@ -462,11 +462,11 @@ export default function Home() {
 
             {/* Legal Documents */}
             <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 pt-0.5">
-              <a href="/privacy" className="hover:text-slate-300 transition">Privacy</a>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition">Privacy</a>
               <span>•</span>
-              <a href="/terms" className="hover:text-slate-300 transition">Terms</a>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition">Terms</a>
               <span>•</span>
-              <a href="/guidelines" className="hover:text-slate-300 transition">Guidelines</a>
+              <a href="/guidelines" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition">Guidelines</a>
             </div>
 
             {isAuthenticated && (
