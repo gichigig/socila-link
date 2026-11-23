@@ -23,6 +23,15 @@ export interface UserProfile {
   photos?: Array<{ id: string; photoUrl: string; isPrimary: boolean; orderIndex: number }>;
 }
 
+export interface UserPreferencesData {
+  id?: string;
+  interestedInGenders?: string;
+  relationshipIntentions?: string;
+  minAge?: number;
+  maxAge?: number;
+  maxDistanceKm?: number;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -33,6 +42,7 @@ export interface User {
   emailVerified: boolean;
   phoneVerified: boolean;
   profile?: UserProfile | null;
+  preferences?: UserPreferencesData | null;
   wallet?: { balanceKes: number; escrowBalanceKes?: number } | null;
 }
 
@@ -44,7 +54,7 @@ interface AuthContextType {
   register: (payload: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile> & { phone?: string | null }) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null }) => Promise<{ success: boolean; error?: string }>;
   syncLocation: (coords?: {
     latitude?: number;
     longitude?: number;
@@ -196,6 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({
             ...data.data.user,
             profile: mergedProfile,
+            preferences: data.data.preferences || data.data.user?.preferences || null,
           });
 
           if (typeof window !== 'undefined' && mergedProfile.locationCity) {
@@ -239,6 +250,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({
         ...data.data.user,
         profile: data.data.profile,
+        preferences: data.data.preferences || data.data.user?.preferences || null,
       });
       return { success: true };
     } catch {
@@ -265,6 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({
         ...data.data.user,
         profile: data.data.profile,
+        preferences: data.data.preferences || data.data.user?.preferences || null,
       });
       return { success: true };
     } catch {
@@ -286,7 +299,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProfile = async (data: Partial<UserProfile> & { phone?: string | null }) => {
+  const updateProfile = async (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null }) => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -310,6 +323,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...user,
           phone: resData.phone !== undefined ? resData.phone : data.phone !== undefined ? (data.phone || '') : user.phone,
           profile: updatedProfile,
+          preferences: resData.preferences !== undefined ? resData.preferences : user.preferences,
         });
       }
 

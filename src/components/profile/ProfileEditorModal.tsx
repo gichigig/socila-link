@@ -15,6 +15,7 @@ import {
   Sparkles,
   Phone,
   Lock,
+  Heart,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
 import {
@@ -44,6 +45,9 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
   );
   const [vibeTag, setVibeTag] = useState<string | null>(
     user?.profile?.vibeTag !== undefined ? user?.profile?.vibeTag : null
+  );
+  const [interestedInGenders, setInterestedInGenders] = useState<string>(
+    user?.preferences?.interestedInGenders || 'ALL'
   );
 
   const [coords, setCoords] = useState<{ lat?: number; lon?: number }>({
@@ -101,6 +105,7 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
         setVibeTag(
           user.profile.vibeTag !== undefined ? user.profile.vibeTag : null
         );
+        setInterestedInGenders(user.preferences?.interestedInGenders || 'ALL');
         setCoords({
           lat: user.profile.latitude ?? undefined,
           lon: user.profile.longitude ?? undefined,
@@ -364,6 +369,7 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
       companionRateKes,
       vibeTag: vibeTag?.trim() || null,
       phone: phone.trim() ? phone.trim() : null,
+      interestedInGenders: interestedInGenders || 'ALL',
     });
 
     setLoading(false);
@@ -588,6 +594,39 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
             <p className="text-[10px] text-gray-500 leading-tight">
               Used for M-PESA payouts and direct cellular calling when a date is mutually confirmed.
             </p>
+          </div>
+
+          {/* Dating Interest (Feed & Discovery Matching) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-gray-300 flex items-center gap-1">
+                <Heart className="w-3.5 h-3.5 text-rose-400" /> Interested in Meeting
+              </span>
+              <span className="text-[10px] text-gray-500">Curates feed & discovery</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { label: 'Women', value: 'FEMALE' },
+                { label: 'Men', value: 'MALE' },
+                { label: 'Everyone', value: 'ALL' },
+              ].map((opt) => {
+                const isSelected = interestedInGenders === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setInterestedInGenders(opt.value)}
+                    className={`text-[11px] py-1.5 px-2 rounded-xl border text-center font-medium transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold shadow-[0_2px_8px_rgba(244,63,94,0.2)]'
+                        : 'bg-[#161B26] border-gray-800 text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Tonight's Vibe / Availability Pill */}

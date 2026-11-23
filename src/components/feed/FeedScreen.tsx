@@ -56,6 +56,7 @@ interface FeedPost {
     displayName: string;
     avatarUrl?: string | null;
     isVerified?: boolean;
+    gender?: string;
   };
   media: {
     id: string;
@@ -86,6 +87,7 @@ const PREVIEW_POSTS: FeedPost[] = [
       displayName: 'Aisha Al-Mansoor',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
       isVerified: true,
+      gender: 'FEMALE',
     },
     media: [
       {
@@ -110,6 +112,7 @@ const PREVIEW_POSTS: FeedPost[] = [
       displayName: 'Chloe Wanjiru',
       avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500',
       isVerified: true,
+      gender: 'FEMALE',
     },
     media: [
       {
@@ -127,6 +130,31 @@ const PREVIEW_POSTS: FeedPost[] = [
       notHelpfulCount: 3,
       userRating: null,
     },
+  },
+  {
+    id: 'post-prev-3',
+    caption: 'Sunset run through Karura Forest. Keeping the mind and body primed for the next big project.',
+    locationName: 'Karura, Nairobi',
+    likesCount: 247,
+    commentsCount: 19,
+    hasLiked: false,
+    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+    author: {
+      id: 'prev-3',
+      username: 'malik_k',
+      displayName: 'Malik Kamau',
+      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500',
+      isVerified: true,
+      gender: 'MALE',
+    },
+    media: [
+      {
+        id: 'm3',
+        mediaUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900',
+        mediaType: 'IMAGE',
+        orderIndex: 0,
+      },
+    ],
   },
 ];
 
@@ -476,10 +504,24 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
 
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const genderPref = user?.preferences?.interestedInGenders;
+      const genderParam =
+        genderPref && genderPref !== 'ALL'
+          ? `&gender=${encodeURIComponent(genderPref)}`
+          : '';
+
       const url =
         isLoadMore && nextCursor
-          ? `/api/v1/posts/feed?limit=10&cursor=${nextCursor}`
-          : `/api/v1/posts/feed?limit=10`;
+          ? `/api/v1/posts/feed?limit=10&cursor=${nextCursor}${genderParam}`
+          : `/api/v1/posts/feed?limit=10${genderParam}`;
+
+      const getFallbackPosts = () => {
+        if (!genderPref || genderPref === 'ALL') return PREVIEW_POSTS;
+        return PREVIEW_POSTS.filter((p) => {
+          if (!p.author.gender) return true;
+          return p.author.gender.toUpperCase() === genderPref.toUpperCase();
+        });
+      };
 
       const res = await fetch(url, {
         headers: {
@@ -497,7 +539,7 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
               return [...prev, ...freshPosts];
             });
           } else {
-            setPosts(data.posts.length > 0 ? data.posts : PREVIEW_POSTS);
+            setPosts(data.posts.length > 0 ? data.posts : getFallbackPosts());
           }
           setNextCursor(data.nextCursor || null);
           setHasMore(Boolean(data.nextCursor));
@@ -505,12 +547,17 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
         }
       }
       if (!isLoadMore) {
-        setPosts(PREVIEW_POSTS);
+        setPosts(getFallbackPosts());
         setHasMore(false);
       }
     } catch {
       if (!isLoadMore) {
-        setPosts(PREVIEW_POSTS);
+        const genderPref = user?.preferences?.interestedInGenders;
+        const fallback =
+          !genderPref || genderPref === 'ALL'
+            ? PREVIEW_POSTS
+            : PREVIEW_POSTS.filter((p) => !p.author.gender || p.author.gender.toUpperCase() === genderPref.toUpperCase());
+        setPosts(fallback);
         setHasMore(false);
       }
     } finally {
@@ -725,6 +772,22 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
         onScroll={handleFeedScroll}
         className="flex-1 min-h-0 overflow-y-auto space-y-3.5 pr-1 pb-4 no-scrollbar"
       >
+        {/* Gender Dating Preference Feed Indicator */}
+        {user?.preferences?.interestedInGenders && user.preferences.interestedInGenders !== 'ALL' && (
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-purple-500/10 border border-rose-500/20 text-[11px] text-rose-300">
+            <span className="flex items-center gap-1.5 font-medium">
+              <Heart className="w-3 h-3 text-rose-400 fill-rose-400/40" />
+              <span>
+                Feed curated for:{' '}
+                <strong className="text-white">
+                  {user.preferences.interestedInGenders === 'FEMALE' ? 'Women creators' : 'Men creators'}
+                </strong>
+              </span>
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Strict Match</span>
+          </div>
+        )}
+
         {loading ? (
           <div className="space-y-4">
             {[1, 2].map((i) => (

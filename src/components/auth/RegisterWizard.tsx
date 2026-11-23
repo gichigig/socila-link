@@ -25,6 +25,7 @@ import {
   Check,
   ExternalLink,
   X,
+  Heart,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
 
@@ -58,6 +59,7 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
   // Step 3: Dating Preferences & Bio
   const [locationCity, setLocationCity] = useState('Nairobi');
   const [bio, setBio] = useState('');
+  const [interestedInGenders, setInterestedInGenders] = useState<'FEMALE' | 'MALE' | 'ALL'>('ALL');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(['Travel', 'Music', 'Photography']);
   const [companionRateKes, setCompanionRateKes] = useState<number | null>(null);
 
@@ -242,7 +244,7 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
     setErrorMessage('');
 
     try {
-      // Update profile with bio, city, and optional companion rate
+      // Update profile with bio, city, companion rate, and gender dating preference
       await fetch('/api/v1/profiles/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -251,6 +253,7 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
           locationCity,
           avatarUrl,
           companionRateKes,
+          interestedInGenders,
         }),
       });
 
@@ -259,7 +262,7 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          interestedInGenders: 'ALL',
+          interestedInGenders,
           relationshipIntentions: selectedInterests.join(', '),
         }),
       });
@@ -669,6 +672,37 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                 placeholder="Short bio (e.g. Software engineer, loves sunset photography, Afro-fusion music & weekend road trips)"
                 className="w-full py-2 px-3 text-xs bg-[#1A202C] border border-gray-700/60 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#F43F5E] resize-none"
               />
+
+              {/* Dating Interest (Who you want to meet) */}
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 mb-1.5 flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Interested in meeting:</span>
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Women', value: 'FEMALE' },
+                    { label: 'Men', value: 'MALE' },
+                    { label: 'Everyone', value: 'ALL' },
+                  ].map((option) => {
+                    const isSelected = interestedInGenders === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setInterestedInGenders(option.value as any)}
+                        className={`text-xs py-2 px-3 rounded-xl border text-center font-medium transition cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#F43F5E] border-[#F43F5E] text-white font-semibold shadow-[0_2px_10px_rgba(244,63,94,0.3)]'
+                            : 'bg-[#1A202C] border-gray-700/60 text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div>
                 <p className="text-[11px] font-medium text-gray-400 mb-1.5">Pick up to 5 interests:</p>
