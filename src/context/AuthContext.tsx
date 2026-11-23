@@ -41,6 +41,7 @@ export interface User {
   status: string;
   emailVerified: boolean;
   phoneVerified: boolean;
+  usernameChangedAt?: string | Date | null;
   profile?: UserProfile | null;
   preferences?: UserPreferencesData | null;
   wallet?: { balanceKes: number; escrowBalanceKes?: number } | null;
@@ -323,6 +324,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           ...user,
           username: resData.username !== undefined ? resData.username : (data.username || user.username),
+          usernameChangedAt: resData.usernameChangedAt !== undefined ? resData.usernameChangedAt : user.usernameChangedAt,
           phone: resData.phone !== undefined ? resData.phone : data.phone !== undefined ? (data.phone || '') : user.phone,
           profile: updatedProfile,
           preferences: resData.preferences !== undefined ? resData.preferences : user.preferences,

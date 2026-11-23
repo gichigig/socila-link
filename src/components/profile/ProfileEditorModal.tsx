@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import {
   X,
@@ -15,6 +15,7 @@ import {
   Sparkles,
   Phone,
   Lock,
+  Clock,
   Heart,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
@@ -55,6 +56,27 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
     lat: user?.profile?.latitude ?? undefined,
     lon: user?.profile?.longitude ?? undefined,
   });
+
+  // 7-day username change cooldown restriction
+  const usernameCooldown = useMemo(() => {
+    if (!user?.usernameChangedAt) return null;
+    const changedDate = new Date(user.usernameChangedAt);
+    if (isNaN(changedDate.getTime())) return null;
+
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const elapsed = Date.now() - changedDate.getTime();
+    if (elapsed >= SEVEN_DAYS_MS) return null;
+
+    const daysRemaining = Math.ceil((SEVEN_DAYS_MS - elapsed) / (24 * 60 * 60 * 1000));
+    return {
+      locked: true,
+      daysRemaining,
+      unlockDate: new Date(changedDate.getTime() + SEVEN_DAYS_MS).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      }),
+    };
+  }, [user?.usernameChangedAt]);
   const [showMapModal, setShowMapModal] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<KenyaLocation[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -479,17 +501,35 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
                 required
                 className="w-full bg-[#161B26] border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500/60"
               />
-              <div className="relative flex items-center">
-                <span className="absolute left-2.5 text-xs text-rose-400 font-mono font-bold">@</span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                  placeholder="username"
-                  maxLength={30}
-                  required
-                  className="w-full bg-[#161B26] border border-gray-800 rounded-xl pl-6 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500/60 font-mono"
-                />
+              <div>
+                <div className="relative flex items-center">
+                  <span className="absolute left-2.5 text-xs text-rose-400 font-mono font-bold">@</span>
+                  <input
+                    type="text"
+                    value={username}
+                    disabled={!!usernameCooldown?.locked}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    placeholder="username"
+                    maxLength={30}
+                    required
+                    className={`w-full bg-[#161B26] border rounded-xl pl-6 pr-3 py-1.5 text-xs text-white focus:outline-none font-mono ${
+                      usernameCooldown?.locked
+                        ? 'border-amber-500/30 opacity-70 cursor-not-allowed text-gray-400'
+                        : 'border-gray-800 focus:border-rose-500/60'
+                    }`}
+                  />
+                  {usernameCooldown?.locked && (
+                    <span className="absolute right-2.5 text-[9px] font-bold text-amber-400 flex items-center gap-1">
+                      <Lock className="w-3 h-3" />
+                      <span>{usernameCooldown.daysRemaining}d left</span>
+                    </span>
+                  )}
+                </div>
+                <p className="text-[9px] text-gray-500 mt-1 pl-1">
+                  {usernameCooldown?.locked
+                    ? `Username locked for ${usernameCooldown.daysRemaining} more day${usernameCooldown.daysRemaining > 1 ? 's' : ''} (until ${usernameCooldown.unlockDate})`
+                    : 'Username can be changed once every 7 days'}
+                </p>
               </div>
               <div className="relative">
                 <div className="relative flex items-center">
