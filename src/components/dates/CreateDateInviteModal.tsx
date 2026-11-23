@@ -53,7 +53,7 @@ export function CreateDateInviteModal({
 }: CreateDateInviteModalProps) {
   const { user } = useAuth();
   const { socket } = useSocket();
-  const [locationName, setLocationName] = useState('Villa Rosa Kempinski, Nairobi');
+  const [locationName, setLocationName] = useState('');
   const [dateStr, setDateStr] = useState(
     new Date(Date.now() + 86400000).toISOString().slice(0, 16)
   );
@@ -97,8 +97,8 @@ export function CreateDateInviteModal({
 
   useEffect(() => {
     if (!isOpen) return;
+    setLocationName('');
     if (initialValues) {
-      if (initialValues.locationName) setLocationName(initialValues.locationName);
       if (initialValues.durationHours) setDurationHours(initialValues.durationHours);
       if (initialValues.escrowAmountKes) setEscrowAmountKes(initialValues.escrowAmountKes);
       if (initialValues.notes !== undefined) setNotes(initialValues.notes || '');
@@ -217,6 +217,11 @@ export function CreateDateInviteModal({
       return;
     }
 
+    if (!locationName.trim()) {
+      setError('Please enter a meeting venue or location');
+      return;
+    }
+
     if (!dateStr || isNaN(new Date(dateStr).getTime())) {
       setError('Please select a valid meeting date and time');
       return;
@@ -239,7 +244,7 @@ export function CreateDateInviteModal({
 
       const payload: any = isRebook
         ? {
-            locationName,
+            locationName: locationName.trim(),
             scheduledAt: scheduledAtIso,
             durationHours: Number(durationHours),
             escrowAmountKes: numericEscrow,
@@ -248,7 +253,7 @@ export function CreateDateInviteModal({
           }
         : {
             inviteeId: targetInviteeId,
-            locationName,
+            locationName: locationName.trim(),
             scheduledAt: scheduledAtIso,
             durationHours: Number(durationHours),
             escrowAmountKes: numericEscrow,
@@ -439,8 +444,8 @@ export function CreateDateInviteModal({
                   type="text"
                   value={locationName}
                   onChange={(e) => setLocationName(e.target.value)}
-                  placeholder="e.g. Sankara Hotel, Westlands"
-                  className="w-full bg-[#161B26] border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500/60"
+                  placeholder="Enter meeting venue or location..."
+                  className="w-full bg-[#161B26] border border-gray-800 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-rose-500/60"
                   required
                 />
               </div>
@@ -542,7 +547,7 @@ export function CreateDateInviteModal({
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !locationName.trim()}
                 className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
               >
                 {loading ? (

@@ -73,7 +73,7 @@ export function ScheduleDateModal({
   const [dateStr, setDateStr] = useState(formatLocalDate(initialDateObj));
   const [timeStr, setTimeStr] = useState(formatLocalTime(initialDateObj));
   const [durationHours, setDurationHours] = useState(dateItem.durationHours || 2);
-  const [locationName, setLocationName] = useState(dateItem.locationName || '');
+  const [locationName, setLocationName] = useState('');
   const [notes, setNotes] = useState(dateItem.notes || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -277,8 +277,7 @@ export function ScheduleDateModal({
                 type="text"
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                placeholder="e.g. Java House, Sarit Centre"
-                required
+                placeholder="Enter new meeting venue..."
                 className="w-full bg-[#121721] border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-rose-500 transition-colors"
               />
             </div>

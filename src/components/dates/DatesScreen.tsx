@@ -469,8 +469,8 @@ export function DatesScreen({ onOpenWallet }: DatesScreenProps) {
     setRebookPartner(date.partner);
     setRebookInitialValues({
       rebookDateId: date.id,
-      locationName: date.locationName,
-      locationAddress: date.locationAddress,
+      locationName: '',
+      locationAddress: null,
       durationHours: date.durationHours,
       escrowAmountKes: date.escrowAmountKes,
       notes: date.notes,
