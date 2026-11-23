@@ -205,6 +205,38 @@ export function LoginModal({ onBack, onSignUpClick, onSuccess }: LoginModalProps
             <span>Facebook</span>
           </button>
         </div>
+
+        {/* Legal Disclaimer */}
+        <p className="mt-3 text-center text-[10px] text-gray-500 leading-tight">
+          By continuing, you agree to our{' '}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 underline hover:text-[#F43F5E]"
+          >
+            Terms
+          </a>
+          ,{' '}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 underline hover:text-[#F43F5E]"
+          >
+            Privacy
+          </a>
+          , and{' '}
+          <a
+            href="/guidelines"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 underline hover:text-[#F43F5E]"
+          >
+            Guidelines
+          </a>
+          .
+        </p>
       </div>
 
       {/* Footer */}

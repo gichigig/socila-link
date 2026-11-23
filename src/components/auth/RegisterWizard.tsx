@@ -514,6 +514,38 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
               </svg>
               <span className="font-medium">Continue with Google</span>
             </button>
+
+            {/* Google Terms Disclaimer */}
+            <p className="mt-2.5 text-center text-[10px] text-gray-500 leading-tight">
+              By continuing with Google, you agree to our{' '}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 underline hover:text-[#F43F5E]"
+              >
+                Terms
+              </a>
+              ,{' '}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 underline hover:text-[#F43F5E]"
+              >
+                Privacy
+              </a>
+              , and{' '}
+              <a
+                href="/guidelines"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 underline hover:text-[#F43F5E]"
+              >
+                Guidelines
+              </a>
+              .
+            </p>
           </div>
         )}
 
