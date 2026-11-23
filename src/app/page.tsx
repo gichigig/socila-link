@@ -1084,6 +1084,7 @@ export default function Home() {
           <AgeVerificationModal
             onSuccess={() => refreshUser()}
             confirmAge={confirmAge}
+            initialUsername={user?.username || ''}
           />
         )}
 

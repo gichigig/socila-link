@@ -36,6 +36,7 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
   const { user, updateProfile, syncLocation, refreshUser } = useAuth();
 
   const [displayName, setDisplayName] = useState(user?.profile?.displayName || '');
+  const [username, setUsername] = useState(user?.username || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState(user?.profile?.bio || '');
   const [locationCity, setLocationCity] = useState(user?.profile?.locationCity || '');
@@ -93,6 +94,7 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
   useEffect(() => {
     if (isOpen) {
       setPhone(user?.phone || '');
+      setUsername(user?.username || '');
       if (user?.profile) {
         setDisplayName(user.profile.displayName || '');
         setBio(user.profile.bio || '');
@@ -360,8 +362,27 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
       }
     }
 
+    if (!username.trim()) {
+      setStatusMessage({ type: 'error', text: 'Username is required' });
+      setLoading(false);
+      return;
+    }
+
+    if (username.trim().length < 3) {
+      setStatusMessage({ type: 'error', text: 'Username must be at least 3 characters' });
+      setLoading(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      setStatusMessage({ type: 'error', text: 'Username can only contain letters, numbers, and underscores' });
+      setLoading(false);
+      return;
+    }
+
     const result = await updateProfile({
       displayName: displayName.trim(),
+      username: username.trim().toLowerCase(),
       bio: bio.trim(),
       locationCity: trimmedCity,
       ...coordsToSave,
@@ -458,6 +479,18 @@ export function ProfileEditorModal({ isOpen, onClose }: ProfileEditorModalProps)
                 required
                 className="w-full bg-[#161B26] border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500/60"
               />
+              <div className="relative flex items-center">
+                <span className="absolute left-2.5 text-xs text-rose-400 font-mono font-bold">@</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="username"
+                  maxLength={30}
+                  required
+                  className="w-full bg-[#161B26] border border-gray-800 rounded-xl pl-6 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500/60 font-mono"
+                />
+              </div>
               <div className="relative">
                 <div className="relative flex items-center">
                   <MapPin className="absolute left-2.5 w-3 h-3 text-gray-500" />

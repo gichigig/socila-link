@@ -10,11 +10,13 @@ import {
   Heart,
   Flame,
   CheckCircle2,
+  AtSign,
 } from 'lucide-react';
 
 interface AgeVerificationModalProps {
   onSuccess: () => void;
   confirmAge: (data: {
+    username?: string;
     dateOfBirth: string;
     gender: string;
     interestedInGenders?: string;
@@ -22,9 +24,11 @@ interface AgeVerificationModalProps {
     bio?: string;
     companionRateKes?: number | null;
   }) => Promise<{ success: boolean; error?: string }>;
+  initialUsername?: string;
 }
 
-export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationModalProps) {
+export function AgeVerificationModal({ onSuccess, confirmAge, initialUsername = '' }: AgeVerificationModalProps) {
+  const [username, setUsername] = useState(initialUsername);
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'FEMALE' | 'MALE' | 'NON_BINARY' | 'OTHER'>('FEMALE');
   const [interestedInGenders, setInterestedInGenders] = useState<'ALL' | 'FEMALE' | 'MALE'>('ALL');
@@ -56,6 +60,21 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
     e.preventDefault();
     setErrorMessage('');
 
+    if (!username.trim()) {
+      setErrorMessage('Please choose a username.');
+      return;
+    }
+
+    if (username.trim().length < 3) {
+      setErrorMessage('Username must be at least 3 characters.');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+      setErrorMessage('Username can only contain letters, numbers, and underscores.');
+      return;
+    }
+
     if (!dateOfBirth) {
       setErrorMessage('Please enter your date of birth.');
       return;
@@ -75,6 +94,7 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
 
     try {
       const result = await confirmAge({
+        username: username.trim().toLowerCase(),
         dateOfBirth,
         gender,
         interestedInGenders,
@@ -137,7 +157,36 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 1. Date of Birth */}
+          {/* 1. Pick / Customize Username */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
+              <label htmlFor="username" className="flex items-center gap-1.5">
+                <AtSign className="w-3.5 h-3.5 text-rose-400" />
+                <span>Your Username</span>
+                <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[10px] text-slate-400 font-mono">@handle</span>
+            </div>
+
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 text-xs text-rose-400 font-mono font-bold">@</span>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="username"
+                maxLength={30}
+                required
+                className="w-full pl-8 pr-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-rose-500/60 focus:ring-2 focus:ring-rose-500/20 transition-all font-mono"
+              />
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Pick a unique handle or keep the suggested one. You can change this later in your profile.
+            </p>
+          </div>
+
+          {/* 2. Date of Birth */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
               <label htmlFor="dob" className="flex items-center gap-1.5">
@@ -335,7 +384,7 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading || isUnderage || !dateOfBirth || !confirmedAdult}
+            disabled={loading || isUnderage || !dateOfBirth || !confirmedAdult || !username.trim()}
             className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 text-white font-semibold text-sm shadow-xl shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
             {loading ? (

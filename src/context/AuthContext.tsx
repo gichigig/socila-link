@@ -54,7 +54,7 @@ interface AuthContextType {
   register: (payload: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null }) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null; username?: string }) => Promise<{ success: boolean; error?: string }>;
   syncLocation: (coords?: {
     latitude?: number;
     longitude?: number;
@@ -66,6 +66,7 @@ interface AuthContextType {
     error?: string;
   }>;
   confirmAge: (data: {
+    username?: string;
     dateOfBirth: string;
     gender: string;
     interestedInGenders?: string;
@@ -299,7 +300,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProfile = async (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null }) => {
+  const updateProfile = async (data: Partial<UserProfile> & { phone?: string | null; interestedInGenders?: string | null; username?: string }) => {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -321,6 +322,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (user) {
         setUser({
           ...user,
+          username: resData.username !== undefined ? resData.username : (data.username || user.username),
           phone: resData.phone !== undefined ? resData.phone : data.phone !== undefined ? (data.phone || '') : user.phone,
           profile: updatedProfile,
           preferences: resData.preferences !== undefined ? resData.preferences : user.preferences,
@@ -350,6 +352,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const confirmAge = async (data: {
+    username?: string;
     dateOfBirth: string;
     gender: string;
     interestedInGenders?: string;
@@ -376,6 +379,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (resData.data?.user) {
         setUser({
           ...resData.data.user,
+          username: resData.data.user.username || data.username || user?.username,
           profile: resData.data.profile,
         });
         if (typeof window !== 'undefined' && resData.data.profile) {
