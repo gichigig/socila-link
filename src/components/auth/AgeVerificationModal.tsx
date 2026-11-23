@@ -301,7 +301,26 @@ export function AgeVerificationModal({ onSuccess, confirmAge }: AgeVerificationM
               className="mt-0.5 w-4 h-4 rounded border-white/20 bg-black/40 text-rose-500 focus:ring-rose-500/30 accent-rose-500 cursor-pointer"
             />
             <span className="text-xs text-slate-300 leading-snug">
-              I certify under penalty of account termination that I am at least <strong className="text-white">18 years of age</strong> and accept the SociLaLink adult terms of service.
+              I certify under penalty of account termination that I am at least <strong className="text-white">18 years of age</strong> and accept the SociLaLink{' '}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="text-rose-400 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Adult Terms of Service
+              </a>{' '}
+              and{' '}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="text-rose-400 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Privacy Policy
+              </a>.
             </span>
           </label>
 

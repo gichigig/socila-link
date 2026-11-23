@@ -425,7 +425,38 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                   required
                   className="mt-0.5 w-3.5 h-3.5 rounded border-gray-700 text-[#F43F5E] focus:ring-0 bg-[#1A202C] cursor-pointer"
                 />
-                <span>I confirm I am 18+ and accept SociLaLink Terms & Privacy Policy</span>
+                <span>
+                  I confirm I am 18+ and accept{' '}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Terms of Service
+                  </a>
+                  {', '}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </a>{' '}
+                  &{' '}
+                  <a
+                    href="/guidelines"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Community Guidelines
+                  </a>
+                </span>
               </label>
 
               <button
