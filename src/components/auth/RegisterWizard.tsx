@@ -18,6 +18,13 @@ import {
   Camera,
   UploadCloud,
   Sparkles,
+  Scale,
+  Shield,
+  ShieldCheck,
+  Users,
+  Check,
+  ExternalLink,
+  X,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
 
@@ -39,6 +46,9 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
   const [password, setPassword] = useState('');
   const [gender, setGender] = useState<'FEMALE' | 'MALE' | 'NON_BINARY' | 'OTHER'>('FEMALE');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [guidelinesAccepted, setGuidelinesAccepted] = useState(false);
+  const [activeLegalModal, setActiveLegalModal] = useState<'privacy' | 'terms' | 'guidelines' | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   // Step 2: OTP Verification
@@ -144,8 +154,8 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
       }
     }
 
-    if (!termsAccepted) {
-      setErrorMessage('You must agree to the Terms of Service & Privacy Policy.');
+    if (!termsAccepted || !privacyAccepted || !guidelinesAccepted) {
+      setErrorMessage('Please review and accept the Terms, Privacy Policy, and Community Guidelines to proceed.');
       return;
     }
 
@@ -417,51 +427,131 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
                 </button>
               </div>
 
-              <label className="flex items-start gap-2 pt-1 text-[11px] text-gray-400 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(e) => setTermsAccepted(e.target.checked)}
-                  required
-                  className="mt-0.5 w-3.5 h-3.5 rounded border-gray-700 text-[#F43F5E] focus:ring-0 bg-[#1A202C] cursor-pointer"
-                />
-                <span>
-                  I confirm I am 18+ and accept{' '}
-                  <a
-                    href="/terms"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-rose-400 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+              {/* Legal & Safety Agreement Card */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-rose-400" />
+                    <span className="text-xs font-bold text-white tracking-wide">Legal & Safety Agreement</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const allCurrentlySelected = termsAccepted && privacyAccepted && guidelinesAccepted;
+                      setTermsAccepted(!allCurrentlySelected);
+                      setPrivacyAccepted(!allCurrentlySelected);
+                      setGuidelinesAccepted(!allCurrentlySelected);
+                    }}
+                    className="text-[10px] font-bold text-rose-400 hover:text-rose-300 underline cursor-pointer"
                   >
-                    Terms of Service
-                  </a>
-                  {', '}
-                  <a
-                    href="/privacy"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-rose-400 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    {termsAccepted && privacyAccepted && guidelinesAccepted ? 'Deselect All' : 'Accept All'}
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Please review our policies and community standards before completing registration:
+                </p>
+
+                {/* Quick Document Reader Buttons */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLegalModal('terms')}
+                    className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
                   >
-                    Privacy Policy
-                  </a>{' '}
-                  &{' '}
-                  <a
-                    href="/guidelines"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-rose-400 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    <Scale className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition" />
+                    <span>Terms (18+)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveLegalModal('privacy')}
+                    className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
                   >
-                    Community Guidelines
-                  </a>
-                </span>
-              </label>
+                    <Shield className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition" />
+                    <span>Privacy (ODPC)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveLegalModal('guidelines')}
+                    className="py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[10px] font-semibold text-slate-300 hover:text-white transition flex flex-col items-center gap-0.5 cursor-pointer text-center group"
+                  >
+                    <Users className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition" />
+                    <span>Guidelines</span>
+                  </button>
+                </div>
+
+                {/* Granular Agreement Checkboxes */}
+                <div className="space-y-2 pt-1 border-t border-white/[0.06]">
+                  {/* 1. Terms Checkbox */}
+                  <label className="flex items-start gap-2 text-[11px] text-slate-300 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-0.5 w-3.5 h-3.5 rounded border-gray-700 text-rose-500 focus:ring-0 bg-[#1A202C] accent-rose-500 cursor-pointer shrink-0"
+                    />
+                    <span className="leading-tight">
+                      I certify I am <strong>18+</strong> and agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('terms'); }}
+                        className="text-rose-400 underline hover:text-rose-300 font-medium"
+                      >
+                        Terms of Service
+                      </button>{' '}
+                      (M-PESA escrow 90/10 split & 6-digit code rules).
+                    </span>
+                  </label>
+
+                  {/* 2. Privacy Checkbox */}
+                  <label className="flex items-start gap-2 text-[11px] text-slate-300 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      className="mt-0.5 w-3.5 h-3.5 rounded border-gray-700 text-rose-500 focus:ring-0 bg-[#1A202C] accent-rose-500 cursor-pointer shrink-0"
+                    />
+                    <span className="leading-tight">
+                      I acknowledge the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('privacy'); }}
+                        className="text-emerald-400 underline hover:text-emerald-300 font-medium"
+                      >
+                        Privacy Policy
+                      </button>{' '}
+                      and consent to ODPC-compliant data & ephemeral location processing.
+                    </span>
+                  </label>
+
+                  {/* 3. Guidelines Checkbox */}
+                  <label className="flex items-start gap-2 text-[11px] text-slate-300 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={guidelinesAccepted}
+                      onChange={(e) => setGuidelinesAccepted(e.target.checked)}
+                      className="mt-0.5 w-3.5 h-3.5 rounded border-gray-700 text-rose-500 focus:ring-0 bg-[#1A202C] accent-rose-500 cursor-pointer shrink-0"
+                    />
+                    <span className="leading-tight">
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setActiveLegalModal('guidelines'); }}
+                        className="text-cyan-400 underline hover:text-cyan-300 font-medium"
+                      >
+                        Community Guidelines
+                      </button>{' '}
+                      (zero tolerance for harassment or NCII, and committing to safe public meetups).
+                    </span>
+                  </label>
+                </div>
+              </div>
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !(termsAccepted && privacyAccepted && guidelinesAccepted)}
                 className="w-full mt-2 py-3 px-6 rounded-full font-semibold text-xs tracking-wide gradient-pink shadow-[0_6px_20px_rgba(225,29,72,0.35)] hover:shadow-[0_8px_25px_rgba(225,29,72,0.5)] active:scale-[0.98] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loading ? (
@@ -746,6 +836,172 @@ export function RegisterWizard({ onBack, onLoginClick, onSuccess }: RegisterWiza
           Log in
         </button>
       </div>
+
+      {/* IN-WIZARD LEGAL READER MODAL */}
+      {activeLegalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-[#0F1420] border border-white/10 rounded-3xl p-5 sm:p-6 shadow-2xl text-white space-y-4 max-h-[88vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] shrink-0">
+              <div className="flex items-center gap-2.5">
+                {activeLegalModal === 'terms' && <Scale className="w-5 h-5 text-rose-400" />}
+                {activeLegalModal === 'privacy' && <Shield className="w-5 h-5 text-emerald-400" />}
+                {activeLegalModal === 'guidelines' && <Users className="w-5 h-5 text-cyan-400" />}
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">
+                    {activeLegalModal === 'terms' && 'Terms of Service (Adult 18+)'}
+                    {activeLegalModal === 'privacy' && 'Privacy Policy (Kenya ODPC)'}
+                    {activeLegalModal === 'guidelines' && 'Community Safety Guidelines'}
+                  </h3>
+                  <span className="text-[10px] text-slate-400">
+                    Official SociLaLink Platform Standards
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveLegalModal(null)}
+                className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scrollable Document Content */}
+            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs text-slate-300 leading-relaxed no-scrollbar">
+              {activeLegalModal === 'terms' && (
+                <>
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-semibold">
+                    Strict 18+ Requirement: By registering, you legally certify that you are 18 years of age or older.
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">1. In-Person Companion Dates & Escrow Protocol</h4>
+                    <p className="text-slate-400">
+                      When booking a companion date, funds are locked in an isolated escrow ledger. Escrow is released exclusively when both parties meet in person and the booking party provides the 6-digit verification code. A 90/10 platform split applies (90% to companion, 10% platform facilitation fee).
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">2. Cancellations & Disputes</h4>
+                    <p className="text-slate-400">
+                      If cancelled before the scheduled time, 100% of escrowed funds revert to your SociLaLink wallet. Funds released via the 6-digit code are final and non-refundable.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">3. Creator Content Ownership</h4>
+                    <p className="text-slate-400">
+                      Paid media and view-once moments are licensed for personal viewing only. Screenshotting, recording, or redistributing content outside the platform is strictly prohibited.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">4. Governing Law</h4>
+                    <p className="text-slate-400">
+                      This contract is governed under the Laws of the Republic of Kenya.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {activeLegalModal === 'privacy' && (
+                <>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold">
+                    Kenya Data Protection Act 2019: We process your data lawfully and transparently under the authority of the ODPC.
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">1. Phone & Personal Data Privacy</h4>
+                    <p className="text-slate-400">
+                      Your phone number is used exclusively for account verification, login security, and M-PESA escrow transactions. It is never displayed publicly without your consent.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">2. Geolocation & Ephemeral Purging</h4>
+                    <p className="text-slate-400">
+                      GPS coordinates are accessed only with your permission for distance matching and live navigation. Live location streams are temporary and automatically destroyed upon expiration.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">3. Calls & Media Privacy</h4>
+                    <p className="text-slate-400">
+                      In-app voice and video calls operate via encrypted LiveKit WebRTC peer-to-peer streams and are never recorded or listened to. View-once moments auto-burn after viewing.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">4. Your Statutory Rights</h4>
+                    <p className="text-slate-400">
+                      You have the right to access, rectify, and permanently delete your data at any time by contacting privacy@socilalink.me.ke.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {activeLegalModal === 'guidelines' && (
+                <>
+                  <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-semibold">
+                    Zero Tolerance: Underage activity, non-consensual imagery (NCII), extortion, and violence lead to permanent bans and police referral.
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">1. Golden Rules for Meeting In-Person</h4>
+                    <ul className="list-disc list-inside space-y-1 text-slate-400">
+                      <li>Always meet in public venues (cafes, restaurants, lounges).</li>
+                      <li>Share your live location with a trusted friend.</li>
+                      <li>Never reveal your 6-digit verification code before meeting your date in person.</li>
+                      <li>Control your own transportation to and from meetings.</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">2. Respect & Mutual Consent</h4>
+                    <p className="text-slate-400">
+                      No harassment, stalking, or unsolicited explicit material. Consent can be withdrawn at any time.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-white text-xs">3. Financial Integrity</h4>
+                    <p className="text-slate-400">
+                      Never transfer funds outside SociLaLink escrow. Beware of anyone asking for advance travel or medical money before meeting.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-3 shrink-0">
+              <a
+                href={
+                  activeLegalModal === 'terms'
+                    ? '/terms'
+                    : activeLegalModal === 'privacy'
+                    ? '/privacy'
+                    : '/guidelines'
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 underline"
+              >
+                <span>Full Web Page</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeLegalModal === 'terms') setTermsAccepted(true);
+                  if (activeLegalModal === 'privacy') setPrivacyAccepted(true);
+                  if (activeLegalModal === 'guidelines') setGuidelinesAccepted(true);
+                  setActiveLegalModal(null);
+                }}
+                className="py-2 px-4 rounded-xl gradient-brand text-white font-bold text-xs shadow-md shadow-rose-500/25 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>
+                  {activeLegalModal === 'terms' && 'I Accept Terms of Service'}
+                  {activeLegalModal === 'privacy' && 'I Accept Privacy Policy'}
+                  {activeLegalModal === 'guidelines' && 'I Accept Guidelines'}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
