@@ -160,6 +160,39 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
   const [followingAuthorIds, setFollowingAuthorIds] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Auto-hide top search & upload bar on scroll down, reveal on scroll up
+  const [isFeedHeaderVisible, setIsFeedHeaderVisible] = useState(true);
+  const lastFeedScrollRef = useRef(0);
+
+  const handleFeedScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScroll = e.currentTarget.scrollTop;
+    const lastScroll = lastFeedScrollRef.current;
+    const delta = currentScroll - lastScroll;
+
+    // Do not hide header if user is currently searching/typing
+    if (document.activeElement?.tagName === 'INPUT') return;
+
+    if (currentScroll <= 15) {
+      setIsFeedHeaderVisible(true);
+      lastFeedScrollRef.current = currentScroll;
+      return;
+    }
+
+    // Guard against iOS elastic bounce at bottom
+    if (currentScroll + e.currentTarget.clientHeight >= e.currentTarget.scrollHeight - 5) {
+      return;
+    }
+
+    if (Math.abs(delta) > 8) {
+      if (delta > 0 && currentScroll > 50) {
+        setIsFeedHeaderVisible(false);
+      } else if (delta < 0) {
+        setIsFeedHeaderVisible(true);
+      }
+      lastFeedScrollRef.current = currentScroll;
+    }
+  };
+
   // Monetization & Moment Unlock State
   const [unlockingPost, setUnlockingPost] = useState<FeedPost | null>(null);
   const [unlockedPostIds, setUnlockedPostIds] = useState<Set<string>>(new Set());
@@ -615,7 +648,13 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
   return (
     <div className="relative flex-1 min-h-0 flex flex-col h-full w-full select-none overflow-hidden">
       {/* Header: Creator Search & Upload Moment */}
-      <div className="flex items-center gap-2 px-1 py-1.5 mb-2 shrink-0">
+      <div
+        className={`flex items-center gap-2 px-1 shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${
+          isFeedHeaderVisible
+            ? 'max-h-16 opacity-100 py-1.5 mb-2'
+            : 'max-h-0 opacity-0 py-0 mb-0 pointer-events-none'
+        }`}
+      >
         {/* Search Bar */}
         <div className="relative flex-1 flex items-center min-w-0">
           <Search className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -682,7 +721,10 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
       )}
 
       {/* Main Feed Stream */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-3.5 pr-1 pb-4 no-scrollbar">
+      <div
+        onScroll={handleFeedScroll}
+        className="flex-1 min-h-0 overflow-y-auto space-y-3.5 pr-1 pb-4 no-scrollbar"
+      >
         {loading ? (
           <div className="space-y-4">
             {[1, 2].map((i) => (

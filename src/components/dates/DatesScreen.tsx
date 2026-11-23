@@ -108,6 +108,35 @@ export function DatesScreen({ onOpenWallet }: DatesScreenProps) {
   const [isManualCheckingPayment, setIsManualCheckingPayment] = useState(false);
   const payingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Auto-hide top header on scroll down, reveal on scroll up
+  const [isDatesHeaderVisible, setIsDatesHeaderVisible] = useState(true);
+  const lastDatesScrollRef = useRef(0);
+
+  const handleDatesScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScroll = e.currentTarget.scrollTop;
+    const lastScroll = lastDatesScrollRef.current;
+    const delta = currentScroll - lastScroll;
+
+    if (currentScroll <= 15) {
+      setIsDatesHeaderVisible(true);
+      lastDatesScrollRef.current = currentScroll;
+      return;
+    }
+
+    if (currentScroll + e.currentTarget.clientHeight >= e.currentTarget.scrollHeight - 5) {
+      return;
+    }
+
+    if (Math.abs(delta) > 8) {
+      if (delta > 0 && currentScroll > 50) {
+        setIsDatesHeaderVisible(false);
+      } else if (delta < 0) {
+        setIsDatesHeaderVisible(true);
+      }
+      lastDatesScrollRef.current = currentScroll;
+    }
+  };
+
   // 1. Real-time WebSocket listener: reload dates on payment confirmation OR date schedule change
   useEffect(() => {
     if (!socket) return;
@@ -471,7 +500,13 @@ export function DatesScreen({ onOpenWallet }: DatesScreenProps) {
   return (
     <div className="flex-1 flex flex-col h-full text-white">
       {/* Header */}
-      <div className="p-3.5 pb-2.5 border-b border-white/[0.08] glass-panel rounded-t-3xl">
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isDatesHeaderVisible
+            ? 'max-h-36 opacity-100 p-3.5 pb-2.5 border-b border-white/[0.08] glass-panel rounded-t-3xl'
+            : 'max-h-0 opacity-0 p-0 border-b-transparent pointer-events-none'
+        }`}
+      >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl gradient-brand flex items-center justify-center text-white shadow-md">
@@ -513,7 +548,10 @@ export function DatesScreen({ onOpenWallet }: DatesScreenProps) {
       </div>
 
       {/* Date Cards List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div
+        onScroll={handleDatesScroll}
+        className="flex-1 overflow-y-auto p-3 space-y-3"
+      >
         {loading ? (
           <div className="flex flex-col items-center justify-center p-12 text-gray-500 gap-2">
             <Loader2 className="w-6 h-6 animate-spin text-rose-500" />

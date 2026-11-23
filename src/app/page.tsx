@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/context/SocketContext';
 import { LoginModal } from '@/components/auth/LoginModal';
@@ -114,6 +114,61 @@ export default function Home() {
   const { socket } = useSocket();
   const [authModal, setAuthModal] = useState<'login' | 'register' | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('discover');
+  const [isTopHeaderVisible, setIsTopHeaderVisible] = useState(true);
+  const lastScrollTopRef = useRef(0);
+  const viewportStageRef = useRef<HTMLDivElement>(null);
+
+  // Auto-hide top header on scroll down, reveal on scroll up
+  useEffect(() => {
+    const stage = viewportStageRef.current;
+    if (!stage) return;
+
+    const handleScrollCapture = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target || target.scrollTop === undefined) return;
+
+      // Ignore modals, drawers, or dialogs
+      if (target.closest('[role="dialog"]') || target.closest('.fixed')) return;
+
+      const currentScroll = target.scrollTop;
+      const lastScroll = lastScrollTopRef.current;
+      const delta = currentScroll - lastScroll;
+
+      // When near the top, always show header
+      if (currentScroll <= 15) {
+        setIsTopHeaderVisible(true);
+        lastScrollTopRef.current = currentScroll;
+        return;
+      }
+
+      // Guard against iOS overscroll rubber-banding at bottom
+      if (currentScroll + target.clientHeight >= target.scrollHeight - 5) {
+        return;
+      }
+
+      if (Math.abs(delta) > 8) {
+        if (delta > 0 && currentScroll > 50) {
+          // Scrolling down into content -> hide top header
+          setIsTopHeaderVisible(false);
+        } else if (delta < 0) {
+          // Scrolling up / pulling down -> show top header
+          setIsTopHeaderVisible(true);
+        }
+        lastScrollTopRef.current = currentScroll;
+      }
+    };
+
+    stage.addEventListener('scroll', handleScrollCapture, { capture: true, passive: true });
+    return () => {
+      stage.removeEventListener('scroll', handleScrollCapture, { capture: true });
+    };
+  }, []);
+
+  // Reset top header visibility whenever active tab changes
+  useEffect(() => {
+    setIsTopHeaderVisible(true);
+    lastScrollTopRef.current = 0;
+  }, [activeTab]);
 
   // Synchronize Companion Dates badge on real-time date and payment events
   useEffect(() => {
@@ -420,10 +475,19 @@ export default function Home() {
         {/* ======================================================== */}
         {/* 2. CENTER STAGE / MAIN VIEWPORT CANVAS                   */}
         {/* ======================================================== */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between h-full bg-[#0A0D17]/90 rounded-none lg:rounded-3xl overflow-hidden shadow-2xl border-0 lg:border border-white/[0.08] backdrop-blur-2xl relative p-2 sm:p-3 lg:p-4">
+        <div
+          ref={viewportStageRef}
+          className="flex-1 min-w-0 flex flex-col justify-between h-full bg-[#0A0D17]/90 rounded-none lg:rounded-3xl overflow-hidden shadow-2xl border-0 lg:border border-white/[0.08] backdrop-blur-2xl relative p-2 sm:p-3 lg:p-4"
+        >
           
           {/* MOBILE TOP APP HEADER (< lg only) */}
-          <header className="lg:hidden shrink-0 flex items-center justify-between pb-2.5 pt-1 px-1 border-b border-white/[0.08] z-30 bg-[#0A0D17]/85 backdrop-blur-md">
+          <header
+            className={`lg:hidden shrink-0 flex items-center justify-between border-b border-white/[0.08] z-30 bg-[#0A0D17]/85 backdrop-blur-md transition-all duration-300 ease-in-out overflow-hidden ${
+              isTopHeaderVisible
+                ? 'max-h-16 opacity-100 pb-2.5 pt-1 px-1'
+                : 'max-h-0 opacity-0 pb-0 pt-0 px-1 border-b-transparent pointer-events-none -translate-y-2'
+            }`}
+          >
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('discover')}>
               <SociLaLinkLogo size="sm" showText={true} />
               {!isAuthenticated ? (

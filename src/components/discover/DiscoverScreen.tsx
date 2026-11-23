@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { FilterModal } from './FilterModal';
 import { LocationPromptModal } from '../location/LocationPromptModal';
@@ -334,6 +334,37 @@ export function DiscoverScreen({
   }, [savedUserIds]);
   const [candidatePhotoIndices, setCandidatePhotoIndices] = useState<Record<string, number>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Auto-hide top filter pills on scroll down, reveal on scroll up
+  const [isDiscoverHeaderVisible, setIsDiscoverHeaderVisible] = useState(true);
+  const lastDiscoverScrollRef = useRef(0);
+
+  const handleDiscoverScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScroll = e.currentTarget.scrollTop;
+    const lastScroll = lastDiscoverScrollRef.current;
+    const delta = currentScroll - lastScroll;
+
+    // Do not hide if user is near top
+    if (currentScroll <= 15) {
+      setIsDiscoverHeaderVisible(true);
+      lastDiscoverScrollRef.current = currentScroll;
+      return;
+    }
+
+    // Guard against iOS elastic bounce at bottom
+    if (currentScroll + e.currentTarget.clientHeight >= e.currentTarget.scrollHeight - 5) {
+      return;
+    }
+
+    if (Math.abs(delta) > 8) {
+      if (delta > 0 && currentScroll > 50) {
+        setIsDiscoverHeaderVisible(false);
+      } else if (delta < 0) {
+        setIsDiscoverHeaderVisible(true);
+      }
+      lastDiscoverScrollRef.current = currentScroll;
+    }
+  };
 
   // Location State & Calibration
   const [locating, setLocating] = useState(false);
@@ -785,7 +816,13 @@ export function DiscoverScreen({
   return (
     <div className="relative flex-1 min-h-0 flex flex-col h-full w-full select-none overflow-hidden">
       {/* 1. TOP FEED BAR: Filter pills & Search */}
-      <div className="flex items-center justify-between px-1 py-1 mb-2 shrink-0">
+      <div
+        className={`flex items-center justify-between px-1 shrink-0 transition-all duration-300 ease-in-out overflow-hidden ${
+          isDiscoverHeaderVisible
+            ? 'max-h-20 opacity-100 py-1 mb-2'
+            : 'max-h-0 opacity-0 py-0 mb-0 pointer-events-none'
+        }`}
+      >
         <div className="flex items-center gap-1.5 p-1 bg-white/[0.04] backdrop-blur-md rounded-2xl border border-white/[0.06] overflow-x-auto no-scrollbar">
           <button
             onClick={() => handleFilterTab('all')}
@@ -998,7 +1035,10 @@ export function DiscoverScreen({
       {/* ======================================================== */}
       {/* 2. SOCIAL MEDIA STYLE SCROLLING FEED                     */}
       {/* ======================================================== */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 pb-10 no-scrollbar">
+      <div
+        onScroll={handleDiscoverScroll}
+        className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 pb-10 no-scrollbar"
+      >
         {loading ? (
           <div className="space-y-4 max-w-lg mx-auto">
             {[1, 2].map((i) => (
