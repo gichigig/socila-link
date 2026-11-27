@@ -12,9 +12,11 @@ import {
   Loader2,
   AlertCircle,
   Coins,
+  Play,
 } from 'lucide-react';
 import { DeviceImagePicker } from '@/components/common/DeviceImagePicker';
 import { isVideoMedia } from '@/utils/media';
+import { formatVideoDuration, getVideoDuration } from '@/utils/duration';
 
 interface AttachMediaModalProps {
   isOpen: boolean;
@@ -33,6 +35,7 @@ export function AttachMediaModal({ isOpen, onClose, onSend }: AttachMediaModalPr
   const [caption, setCaption] = useState('');
   const [priceKes, setPriceKes] = useState(100);
   const [durationSeconds, setDurationSeconds] = useState(10);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [lockedIsViewOnce, setLockedIsViewOnce] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +46,7 @@ export function AttachMediaModal({ isOpen, onClose, onSend }: AttachMediaModalPr
   const handleReset = () => {
     setMediaUrl('');
     setCaption('');
+    setVideoDuration(null);
     setError(null);
     onClose();
   };
@@ -76,7 +80,7 @@ export function AttachMediaModal({ isOpen, onClose, onSend }: AttachMediaModalPr
             fullMediaUrl: mediaUrl,
             priceKes: Math.max(10, Number(priceKes) || 100),
             isViewOnce: lockedIsViewOnce,
-            durationSeconds: Number(durationSeconds) || 10,
+            durationSeconds: videoDuration || Number(durationSeconds) || 10,
           },
         });
       } else if (mode === 'view_once') {
@@ -169,6 +173,16 @@ export function AttachMediaModal({ isOpen, onClose, onSend }: AttachMediaModalPr
               onChange={(url) => {
                 setMediaUrl(url);
                 setError(null);
+                if (url && isVideoMedia(url)) {
+                  getVideoDuration(url).then((dur) => {
+                    if (dur > 0) {
+                      setVideoDuration(dur);
+                      setDurationSeconds(dur);
+                    }
+                  });
+                } else {
+                  setVideoDuration(null);
+                }
               }}
               onUploadingChange={setIsUploading}
               folder="messages"
@@ -221,6 +235,16 @@ export function AttachMediaModal({ isOpen, onClose, onSend }: AttachMediaModalPr
                 <span className="text-emerald-400 font-semibold">You earn: KES {Math.round(priceKes * 0.8).toLocaleString()} (80%)</span>
                 <span>Platform fee: KES {Math.round(priceKes * 0.2).toLocaleString()} (20%)</span>
               </div>
+
+              {/* Video Duration Badge */}
+              {isVideo && (
+                <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-medium">
+                  <span className="flex items-center gap-1.5 text-[11px]">
+                    <Play className="w-3 h-3 fill-cyan-300" /> Video Duration
+                  </span>
+                  <span className="font-mono font-bold text-xs">{formatVideoDuration(videoDuration || durationSeconds)}</span>
+                </div>
+              )}
 
               {/* Ephemeral toggle */}
               <div className="pt-2 border-t border-gray-800/80 flex items-center justify-between text-xs">

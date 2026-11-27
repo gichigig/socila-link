@@ -59,3 +59,69 @@ export function formatRemainingTime(seconds: number): string {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Formats video playback length in standard video player format.
+ * e.g. 15 -> '0:15'
+ *      75 -> '1:15'
+ *      3670 -> '1:01:10'
+ */
+export function formatVideoDuration(seconds?: number | null): string {
+  if (!seconds || isNaN(seconds) || seconds <= 0) return '0:00';
+  const totalSecs = Math.round(seconds);
+  const hrs = Math.floor(totalSecs / 3600);
+  const mins = Math.floor((totalSecs % 3600) / 60);
+  const secs = totalSecs % 60;
+
+  if (hrs > 0) {
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Asynchronously extracts duration (in seconds) from a video File or URL in the browser.
+ */
+export function getVideoDuration(fileOrUrl: File | string): Promise<number> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      return resolve(0);
+    }
+    try {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      const isFile = typeof fileOrUrl !== 'string';
+      const url = isFile ? URL.createObjectURL(fileOrUrl) : fileOrUrl;
+      video.src = url;
+
+      const cleanup = () => {
+        if (isFile) {
+          try {
+            URL.revokeObjectURL(url);
+          } catch {
+            // ignore
+          }
+        }
+      };
+
+      video.onloadedmetadata = () => {
+        const dur = Math.round(video.duration || 0);
+        cleanup();
+        resolve(dur);
+      };
+
+      video.onerror = () => {
+        cleanup();
+        resolve(0);
+      };
+
+      // Timeout fallback after 4 seconds
+      setTimeout(() => {
+        cleanup();
+        resolve(0);
+      }, 4000);
+    } catch {
+      resolve(0);
+    }
+  });
+}
+

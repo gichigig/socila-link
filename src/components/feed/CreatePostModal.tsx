@@ -16,9 +16,10 @@ import {
   UploadCloud,
   Clock,
   Flame,
+  Play,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
-import { formatDuration } from '@/utils/duration';
+import { formatDuration, formatVideoDuration, getVideoDuration } from '@/utils/duration';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
   const [priceKes, setPriceKes] = useState(50);
   const [isViewOnce, setIsViewOnce] = useState(false);
   const [durationSeconds, setDurationSeconds] = useState(0); // 0 = permanent / forever
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [isCustomDuration, setIsCustomDuration] = useState(false);
   const [customDurationVal, setCustomDurationVal] = useState(15);
   const [customDurationUnit, setCustomDurationUnit] = useState<'MINUTES' | 'HOURS'>('MINUTES');
@@ -72,6 +74,18 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
     setError(null);
     setIsUploading(true);
     setMediaType(isVideo ? 'VIDEO' : 'IMAGE');
+
+    // Extract video duration if file is a video
+    if (isVideo) {
+      getVideoDuration(file).then((dur) => {
+        if (dur > 0) {
+          setVideoDuration(dur);
+          if (!durationSeconds) {
+            setDurationSeconds(dur);
+          }
+        }
+      });
+    }
 
     // Instant local preview
     const localPreview = URL.createObjectURL(file);
@@ -125,7 +139,11 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
           isLocked,
           priceKes: isLocked ? Math.round(Number(priceKes)) : 0,
           isViewOnce,
-          durationSeconds: durationSeconds ? Math.round(Number(durationSeconds)) : 0,
+          durationSeconds: durationSeconds
+            ? Math.round(Number(durationSeconds))
+            : videoDuration
+            ? Math.round(videoDuration)
+            : 0,
           media: [
             {
               mediaUrl: mediaUrl.trim(),
@@ -245,25 +263,57 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
               {mediaType === 'VIDEO' ? (
                 <video
                   src={previewUrl || mediaUrl}
-                  controls
+                  controls={!isLocked}
                   playsInline
                   autoPlay
                   loop
                   muted
-                  className={`w-full h-full object-cover object-top ${isLocked ? 'filter blur-sm scale-105' : ''}`}
+                  preload="metadata"
+                  onLoadedMetadata={(e) => {
+                    const dur = Math.round(e.currentTarget.duration || 0);
+                    if (dur > 0) {
+                      setVideoDuration(dur);
+                      if (!durationSeconds) setDurationSeconds(dur);
+                    }
+                  }}
+                  className={`w-full h-full object-cover object-top ${isLocked ? 'filter blur-md scale-105' : ''}`}
                 />
               ) : (
                 <img
                   src={previewUrl || mediaUrl}
                   alt="Selected Moment"
-                  className={`w-full h-full object-cover object-top ${isLocked ? 'filter blur-sm scale-105' : ''}`}
+                  className={`w-full h-full object-cover object-top ${isLocked ? 'filter blur-md scale-105' : ''}`}
                 />
               )}
 
               {/* Status & Change Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
 
-              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 pointer-events-auto">
+              {/* Center Lock Badge with Video Duration when Media is Locked */}
+              {isLocked && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pointer-events-none select-none z-10">
+                  <div className="px-4 py-2 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-xs font-bold flex flex-col items-center gap-1 shadow-2xl animate-fade-in">
+                    <div className="flex items-center gap-1.5 text-rose-400">
+                      <Lock className="w-4 h-4" />
+                      <span className="text-white font-extrabold uppercase tracking-wide">Locked {mediaType === 'VIDEO' ? 'Video' : 'Moment'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-gray-300">
+                      <span className="text-amber-300 font-bold">KES {priceKes}</span>
+                      {mediaType === 'VIDEO' && (videoDuration || durationSeconds > 0) && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1 text-cyan-300 font-mono font-bold">
+                            <Play className="w-3 h-3 fill-cyan-300" />
+                            {formatVideoDuration(videoDuration || durationSeconds)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 pointer-events-auto z-20">
                 <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white flex items-center gap-1">
                   {mediaType === 'VIDEO' ? (
                     <>
@@ -275,19 +325,28 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
                     </>
                   )}
                 </span>
+                {/* On-top Video Duration Badge on blurred screen */}
+                {mediaType === 'VIDEO' && (videoDuration || durationSeconds > 0) && (
+                  <span className={`px-2 py-0.5 rounded-full backdrop-blur-md text-[10px] font-extrabold text-white flex items-center gap-1 shadow-md border ${
+                    isLocked ? 'bg-cyan-500/80 border-cyan-300/40' : 'bg-black/60 border-white/10'
+                  }`}>
+                    <Play className="w-3 h-3 fill-white text-white" />
+                    <span>{formatVideoDuration(videoDuration || durationSeconds)}</span>
+                  </span>
+                )}
                 {isLocked && (
                   <span className="px-2 py-0.5 rounded-full bg-rose-500/80 backdrop-blur-md text-[10px] font-extrabold text-white flex items-center gap-1">
                     <Lock className="w-3 h-3" /> KES {priceKes}
                   </span>
                 )}
-                {(isViewOnce || durationSeconds > 0) && (
+                {(isViewOnce || (durationSeconds > 0 && !videoDuration)) && (
                   <span className="px-2 py-0.5 rounded-full bg-amber-500/80 backdrop-blur-md text-[10px] font-extrabold text-white flex items-center gap-1">
                     <Clock className="w-3 h-3" /> {durationSeconds}s
                   </span>
                 )}
               </div>
 
-              <div className="absolute top-2.5 right-2.5 pointer-events-auto flex items-center gap-1.5">
+              <div className="absolute top-2.5 right-2.5 pointer-events-auto flex items-center gap-1.5 z-20">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -300,6 +359,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
                   onClick={() => {
                     setMediaUrl('');
                     setPreviewUrl(null);
+                    setVideoDuration(null);
                   }}
                   className="w-6 h-6 rounded-full bg-black/60 hover:bg-rose-500/80 backdrop-blur-md border border-white/10 text-white transition cursor-pointer flex items-center justify-center"
                 >

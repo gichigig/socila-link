@@ -32,8 +32,10 @@ import {
   Flame,
   Eye,
   RotateCcw,
+  Play,
+  Film,
 } from 'lucide-react';
-import { formatDuration, formatRemainingTime } from '@/utils/duration';
+import { formatDuration, formatRemainingTime, formatVideoDuration } from '@/utils/duration';
 
 interface FeedPost {
   id: string;
@@ -163,6 +165,17 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [videoDurations, setVideoDurations] = useState<Record<string, number>>({});
+
+  const handleVideoMetadata = (postId: string, duration: number) => {
+    if (duration > 0) {
+      setVideoDurations((prev) => {
+        const rounded = Math.round(duration);
+        if (prev[postId] === rounded) return prev;
+        return { ...prev, [postId]: rounded };
+      });
+    }
+  };
 
   // Pagination & Infinite Scroll State
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -919,7 +932,7 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
                       onDoubleClick={() => !isLockedMoment && !isBurnedForMe && handleToggleLike(post.id)}
                       className="relative w-full aspect-square bg-black overflow-hidden"
                     >
-                      {/* State 1: Locked Moment - Blurred with Centered Unlock Button Only */}
+                      {/* State 1: Locked Moment - Blurred with Duration and Centered Unlock Button */}
                       {isLockedMoment ? (
                         <>
                           {/* Blurred Media */}
@@ -930,6 +943,8 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
                               style={{ filter: 'blur(32px)', WebkitFilter: 'blur(32px)' }}
                               muted
                               playsInline
+                              preload="metadata"
+                              onLoadedMetadata={(e) => handleVideoMetadata(post.id, e.currentTarget.duration)}
                             />
                           ) : (
                             <img
@@ -940,8 +955,23 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
                             />
                           )}
 
-                          {/* Minimal Overlay with Unlock Button Only */}
-                          <div className="absolute inset-0 bg-black/25 flex items-center justify-center p-4 select-none">
+                          {/* Video Duration Badge on Top of Blurred Screen */}
+                          {post.media[0].mediaType === 'VIDEO' && (
+                            <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-xs font-bold shadow-lg shadow-black/60 select-none animate-fade-in">
+                              <Play className="w-3.5 h-3.5 fill-white text-white" />
+                              <span>{formatVideoDuration(videoDurations[post.id] || post.durationSeconds)}</span>
+                            </div>
+                          )}
+
+                          {/* Minimal Overlay with Duration Chip & Unlock Button */}
+                          <div className="absolute inset-0 bg-black/25 flex flex-col items-center justify-center p-4 select-none z-10 gap-2.5">
+                            {post.media[0].mediaType === 'VIDEO' && (
+                              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white text-xs font-semibold shadow-lg shadow-black/50 animate-fade-in">
+                                <Film className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>Locked Video • {formatVideoDuration(videoDurations[post.id] || post.durationSeconds)}</span>
+                              </div>
+                            )}
+
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1238,17 +1268,28 @@ export function FeedScreen({ onRequestAuth, onOpenProfile }: FeedScreenProps) {
             )}
 
             {/* Blurred Preview Card */}
-            <div className="mt-3.5 relative w-full h-36 rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-white/10">
+            <div className="mt-3.5 relative w-full h-36 rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-white/10 select-none">
               <img
                 src={unlockingPost.media[0]?.mediaUrl}
                 alt="Blurred preview"
                 className="w-full h-full object-cover filter blur-xl scale-125 opacity-70"
               />
+
+              {/* Video Duration Badge on Top of Blurred Screen in Modal */}
+              {unlockingPost.media[0]?.mediaType === 'VIDEO' && (
+                <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold shadow-md">
+                  <Play className="w-2.5 h-2.5 fill-white text-white" />
+                  <span>{formatVideoDuration(videoDurations[unlockingPost.id] || unlockingPost.durationSeconds)}</span>
+                </div>
+              )}
+
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-3">
                 <span className="text-[10px] uppercase font-bold text-rose-300 tracking-wider">Unlock Amount</span>
                 <span className="text-2xl font-black text-white mt-0.5">KES {unlockingPost.priceKes || 50}</span>
-                <span className="text-[10px] text-gray-300 mt-1">
-                  {unlockingPost.media[0]?.mediaType === 'VIDEO' ? 'Exclusive Video' : 'Exclusive Photo'}
+                <span className="text-[10px] text-gray-300 mt-1 flex items-center gap-1">
+                  {unlockingPost.media[0]?.mediaType === 'VIDEO'
+                    ? `Exclusive Video (${formatVideoDuration(videoDurations[unlockingPost.id] || unlockingPost.durationSeconds)})`
+                    : 'Exclusive Photo'}
                 </span>
               </div>
             </div>

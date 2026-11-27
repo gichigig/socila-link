@@ -18,9 +18,11 @@ import {
   CheckCircle2,
   Film,
   Video,
+  Play,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isVideoMedia } from '@/utils/media';
+import { formatVideoDuration } from '@/utils/duration';
 
 interface LockedMediaProps {
   messageId: string;
@@ -63,6 +65,7 @@ export function LockedMediaBubble({
   // Ephemeral view-once viewing state
   const [isViewing, setIsViewing] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number>(lockedMedia.durationSeconds || 10);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [isBlackedOut, setIsBlackedOut] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -390,25 +393,56 @@ export function LockedMediaBubble({
     }
   };
 
+  const isVideo = isVideoMedia(lockedMedia.previewUrl || lockedMedia.fullMediaUrl);
+
   return (
     <div className="w-full max-w-xs rounded-2xl overflow-hidden bg-[#1E2533] border border-gray-700/60 shadow-lg my-1 select-none">
       {/* Media Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/40">
         {!isBlackedOut ? (
-          <img
-            src={unlocked && fullUrl && !isBurned ? fullUrl : lockedMedia.previewUrl}
-            alt={lockedMedia.title || 'Locked media preview'}
-            onContextMenu={(e) => e.preventDefault()}
-            draggable={false}
-            className={`w-full h-full object-cover object-top transition-all duration-300 pointer-events-none select-none ${
-              unlocked && !isBurned && !lockedMedia.isViewOnce
-                ? 'filter-none cursor-pointer'
-                : 'blur-xl scale-105'
-            }`}
-            onClick={() => unlocked && !isBurned && handleOpenViewer()}
-          />
+          isVideo ? (
+            <video
+              src={unlocked && fullUrl && !isBurned ? fullUrl : lockedMedia.previewUrl}
+              preload="metadata"
+              onLoadedMetadata={(e) => {
+                if (e.currentTarget.duration) {
+                  setVideoDuration(Math.round(e.currentTarget.duration));
+                }
+              }}
+              muted
+              playsInline
+              onContextMenu={(e) => e.preventDefault()}
+              className={`w-full h-full object-cover object-top transition-all duration-300 pointer-events-none select-none ${
+                unlocked && !isBurned && !lockedMedia.isViewOnce
+                  ? 'filter-none cursor-pointer'
+                  : 'blur-xl scale-105'
+              }`}
+              onClick={() => unlocked && !isBurned && handleOpenViewer()}
+            />
+          ) : (
+            <img
+              src={unlocked && fullUrl && !isBurned ? fullUrl : lockedMedia.previewUrl}
+              alt={lockedMedia.title || 'Locked media preview'}
+              onContextMenu={(e) => e.preventDefault()}
+              draggable={false}
+              className={`w-full h-full object-cover object-top transition-all duration-300 pointer-events-none select-none ${
+                unlocked && !isBurned && !lockedMedia.isViewOnce
+                  ? 'filter-none cursor-pointer'
+                  : 'blur-xl scale-105'
+              }`}
+              onClick={() => unlocked && !isBurned && handleOpenViewer()}
+            />
+          )
         ) : (
           <div className="w-full h-full bg-black flex items-center justify-center select-none" />
+        )}
+
+        {/* Video Duration Badge on Top of Blurred Screen */}
+        {!unlocked && isVideo && (
+          <div className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md text-white text-[9px] font-bold flex items-center gap-1 shadow-md border border-white/20 select-none animate-fade-in">
+            <Play className="w-2.5 h-2.5 fill-white text-white" />
+            <span>{formatVideoDuration(videoDuration || lockedMedia.durationSeconds)}</span>
+          </div>
         )}
 
         {/* In-bubble Blackout overlay for screenshot prevention on unlocked media */}
@@ -441,11 +475,17 @@ export function LockedMediaBubble({
               {lockedMedia.title || 'Exclusive Media'}
             </span>
 
-            {/* Price & View-Once badge */}
+            {/* Price, Video Duration & View-Once badge */}
             <div className="mt-1 flex items-center gap-1.5 flex-wrap justify-center">
               <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
                 KES {lockedMedia.priceKes}
               </span>
+              {isVideo && (
+                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold flex items-center gap-1">
+                  <Film className="w-3 h-3 text-cyan-300" />
+                  <span>Video ({formatVideoDuration(videoDuration || lockedMedia.durationSeconds)})</span>
+                </span>
+              )}
               {lockedMedia.isViewOnce && (
                 <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold flex items-center gap-0.5">
                   <Flame className="w-3 h-3" />
@@ -632,10 +672,10 @@ export function LockedMediaBubble({
           </div>
         )}
 
-        {isVideoMedia(lockedMedia.previewUrl || lockedMedia.fullMediaUrl) && (
+        {isVideo && unlocked && (
           <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-xs text-white text-[9px] font-bold flex items-center gap-1 shadow-sm border border-white/20">
             <Film className="w-3 h-3 text-amber-400" />
-            <span>Video</span>
+            <span>Video ({formatVideoDuration(videoDuration || lockedMedia.durationSeconds)})</span>
           </div>
         )}
 

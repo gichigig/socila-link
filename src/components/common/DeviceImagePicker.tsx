@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Camera, UploadCloud, Loader2, AlertCircle, Film, Play } from 'lucide-react';
 import { uploadMediaFile } from '@/utils/upload';
 import { isVideoMedia } from '@/utils/media';
+import { formatVideoDuration } from '@/utils/duration';
 
 interface DeviceImagePickerProps {
   value?: string;
@@ -33,6 +34,7 @@ export function DeviceImagePicker({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [tempPreviewUrl, setTempPreviewUrl] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
 
   const handleFile = async (file: File) => {
     const isImage = file.type.startsWith('image/');
@@ -178,6 +180,12 @@ export function DeviceImagePicker({
                 muted
                 loop
                 playsInline
+                preload="metadata"
+                onLoadedMetadata={(e) => {
+                  if (e.currentTarget.duration) {
+                    setVideoDuration(Math.round(e.currentTarget.duration));
+                  }
+                }}
               />
             ) : (
               <img src={displayImage} alt="Selected preview" className="w-full h-full object-cover object-top" />
@@ -186,7 +194,7 @@ export function DeviceImagePicker({
             {isVideo && (
               <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-xs text-white text-[10px] font-bold flex items-center gap-1 border border-white/20 shadow-md">
                 <Film className="w-3 h-3 text-rose-400" />
-                <span>Video Clip</span>
+                <span>Video Clip{videoDuration ? ` • ${formatVideoDuration(videoDuration)}` : ''}</span>
               </div>
             )}
 
